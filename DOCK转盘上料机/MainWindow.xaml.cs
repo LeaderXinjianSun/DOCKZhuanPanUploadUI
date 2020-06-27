@@ -26,6 +26,9 @@ namespace DOCK转盘上料机
             PLCManager.Initialize();
             PLCManager.RUN();
 
+            RobotManager.Initialize();
+            RobotManager.ModelPrint += RobotManager_ModelPrint;
+            RobotManager.RobotStateChanged += RobotManager_RobotStateChanged;
 
             SQLTest();
 
@@ -44,7 +47,7 @@ namespace DOCK转盘上料机
             t.Enabled = true;
 
 
-            PLCManager.PLCStateChanged += PLCManager_PLCStateChanged; ;
+            PLCManager.PLCStateChanged += PLCManager_PLCStateChanged;
 
             if (PLCManager.Connect)
             {
@@ -72,10 +75,21 @@ namespace DOCK转盘上料机
             StartPLCToMySQL();
 
             getWorkNo();
-
+            IORun();
            // TimerDelete_Tick2();
         }
-
+        private async void IORun()
+        {
+            while (true)
+            {
+                await Task.Delay(50);
+                for (int i = 0; i < 32; i++)
+                {
+                    PLCManager.FX5uIn[i] = RobotManager.RobotOUT[i];
+                    RobotManager.RobotIN[i] = PLCManager.FX5uOut[i];
+                }
+            }
+        }
         static int DaijiCount = 0;
 
         //心跳表数据上传
@@ -441,7 +455,15 @@ namespace DOCK转盘上料机
         {
             this.Dispatcher.BeginInvoke(new mydelegate(PLCStateChanged), e);
         }
-
+        private void RobotManager_RobotStateChanged(object sender, bool e)
+        {
+            string str = "机械手" + (e ? "连接" : "断开");
+            LdrLog(str);
+        }
+        private void RobotManager_ModelPrint(string e)
+        {
+            LdrLog(e);
+        }
 
 
         public void PLCStateChanged(bool _State)
@@ -457,7 +479,6 @@ namespace DOCK转盘上料机
 
             }
         }
-
 
 
 

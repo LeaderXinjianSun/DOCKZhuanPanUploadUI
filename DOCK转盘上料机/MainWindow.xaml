@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DOCK转盘上料机"
         mc:Ignorable="d"
         Title="DOCK转盘上料机"  Height="650" Width="1200" WindowStartupLocation="CenterScreen"
-         Closing="Window_Closing">
+         Closing="Window_Closing" Icon="mechanical_arm_64px_1224819_easyicon.net.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="3.5*"/>

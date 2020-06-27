@@ -30,13 +30,15 @@ namespace DOCK转盘上料机
         }
 
 
-        public static bool[] FX5uOut = new bool[100];
+        public static bool[] FX5uOut { get; set; }
+        public static bool[] FX5uIn { get; set; }
 
 
 
         public static void Initialize()
         {
-
+            FX5uOut = new bool[32];
+            FX5uIn = new bool[32];
             melsec_net = new MelsecMcNet("192.168.3.250", 3000);   //melsec_net = new MelsecMcNet("192.168.3.250", 3000);
             melsec_net.ConnectTimeOut = 2000;
             melsec_net.ReceiveTimeOut = 100;
@@ -57,18 +59,37 @@ namespace DOCK转盘上料机
         {
             while (true)
             {
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(50);
                 Task Task_SQLSTA = Task.Run(() =>
                 {
-                    OperateResult<bool[]> read = melsec_net.ReadBool("M5000", 2);
-                    if (read.IsSuccess)
+                    try
                     {
-                        Connect = true;
+                        OperateResult<bool[]> read = melsec_net.ReadBool("M1750", 32);
+                        if (read.IsSuccess)
+                        {
+                            FX5uOut = read.Content;
+                            Connect = true;
+                        }
+                        else
+                        {
+                            Connect = false;
+                        }
+                        if (FX5uIn != null)
+                        {
+                            OperateResult write = melsec_net.Write("M1700", FX5uIn);
+                            if (write.IsSuccess)
+                            {
+                                Connect = true;
+                            }
+                            else
+                            {
+                                Connect = false;
+                            }
+                        }
+
                     }
-                    else
-                    {
-                        Connect = false;
-                    }
+                    catch { }
+
                 });
                 await Task_SQLSTA;
             }
